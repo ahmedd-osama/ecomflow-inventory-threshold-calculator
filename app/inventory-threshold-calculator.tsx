@@ -40,7 +40,9 @@ export const InventoryThresholdCalculator = () => {
                 )
               </li>
               <li>The file should include daily orders and inventory levels</li>
-              <li>Click "Calculate Thresholds" to analyze your data</li>
+              <li>
+                Click &quot;Calculate Thresholds&quot; to analyze your data
+              </li>
               <li>
                 The calculator will process your data and generate optimal
                 inventory thresholds
