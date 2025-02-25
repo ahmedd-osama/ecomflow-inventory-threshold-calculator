@@ -1,7 +1,7 @@
 "use server";
 
 import * as XLSX from "xlsx";
-import { CalculatedThresholdResult, ThresholdConfig } from "./calculator";
+import { CalculatedThresholdResult } from "./calculator";
 import { z } from "zod";
 
 /**

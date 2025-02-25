@@ -21,6 +21,3 @@ export type CalculatedThresholdResult = {
     high: number;
   };
 };
-export type ThresholdConfig = {
-  safetyStockPercentage: number;
-};
