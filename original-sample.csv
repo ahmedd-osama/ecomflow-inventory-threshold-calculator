@@ -1,0 +1,3 @@
+product_id,product_name,date,inventory_level,orders,lead_time_days
+SKU123,Widget A,2025-01-01,150,23,5
+SKU123,Widget A,2025-01-02,127,18,5
