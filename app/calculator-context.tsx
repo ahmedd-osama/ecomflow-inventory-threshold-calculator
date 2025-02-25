@@ -4,6 +4,17 @@ import { toast } from "sonner";
 import { calculateThresholdsAction } from "./calculator-actions";
 import { CalculatedThresholdResult } from "./calculator";
 
+/**
+ * Interface defining the shape of the calculator context
+ * @interface CalculatorContextType
+ * @property {File | null} file - The currently uploaded file
+ * @property {function} setFile - Function to update the file state
+ * @property {boolean} isUploading - Loading state during file processing
+ * @property {function} setIsUploading - Function to update loading state
+ * @property {CalculatedThresholdResult[] | null} results - Calculated threshold results
+ * @property {function} setResults - Function to update results state
+ * @property {function} calculateThresholds - Function to process file and calculate thresholds
+ */
 interface CalculatorContextType {
   file: File | null;
   setFile: (file: File | null) => void;
@@ -11,14 +22,20 @@ interface CalculatorContextType {
   setIsUploading: (isUploading: boolean) => void;
   results: CalculatedThresholdResult[] | null;
   setResults: (results: CalculatedThresholdResult[] | null) => void;
-  // TODO: update return type
-  calculateThresholds: () => void;
+  calculateThresholds: () => Promise<void>;
 }
 
+// Create context with undefined default value
 const CalculatorContext = createContext<CalculatorContextType | undefined>(
   undefined
 );
 
+/**
+ * Provider component that wraps app to provide calculator context
+ * @param {Object} props - Component props
+ * @param {ReactNode} props.children - Child components to wrap
+ * @returns {JSX.Element} Provider component
+ */
 export function CalculatorContextProvider({
   children,
 }: {
@@ -29,6 +46,12 @@ export function CalculatorContextProvider({
   const [results, setResults] = useState<CalculatedThresholdResult[] | null>(
     null
   );
+
+  /**
+   * Processes uploaded file and calculates inventory thresholds
+   * Shows toast messages for success/error states
+   * Updates results in context when successful
+   */
   const calculateThresholds = async () => {
     if (!file) {
       toast.error("Please upload a file first");
@@ -51,6 +74,7 @@ export function CalculatorContextProvider({
       setIsUploading(false);
     }
   };
+
   return (
     <CalculatorContext.Provider
       value={{
@@ -68,6 +92,11 @@ export function CalculatorContextProvider({
   );
 }
 
+/**
+ * Custom hook to access calculator context
+ * @throws {Error} If used outside of CalculatorContextProvider
+ * @returns {CalculatorContextType} Calculator context value
+ */
 export function useCalculatorContext() {
   const context = useContext(CalculatorContext);
   if (context === undefined) {

@@ -1,6 +1,11 @@
 "use client";
-import { CalculatedThresholdResult } from "./calculator";
 
+/**
+ * @fileoverview Component for displaying inventory threshold analysis results
+ * Includes interactive charts and metrics visualization
+ */
+
+import { CalculatedThresholdResult } from "./calculator";
 import { TrendingUp } from "lucide-react";
 import {
   Area,
@@ -28,11 +33,30 @@ import {
 } from "@/components/ui/chart";
 import { Badge } from "@/components/ui/badge";
 
+/**
+ * Component that displays detailed inventory threshold analysis for a product
+ *
+ * @component
+ * @param {Object} props - Component props
+ * @param {CalculatedThresholdResult} props.data - Calculated threshold data for a product
+ *
+ * Features:
+ * - Interactive area chart showing historical orders and inventory levels
+ * - Color-coded threshold zones (high, medium, low) on the chart
+ * - Reference lines indicating threshold levels
+ * - Key metrics display including:
+ *   - Sales statistics (avg/min/max daily sales)
+ *   - Lead time and safety stock information
+ *   - Calculated threshold values
+ *
+ * @returns {JSX.Element} Rendered component
+ */
 export const InventoryThresholdView = ({
   data,
 }: {
   data: CalculatedThresholdResult;
 }) => {
+  // Chart configuration for styling and labels
   const chartConfig = {
     orders: {
       label: "Orders",
@@ -44,6 +68,7 @@ export const InventoryThresholdView = ({
     },
   } satisfies ChartConfig;
 
+  // Transform sales data for chart consumption
   const chartData = data.sales_data.map((sale) => ({
     date: new Date(sale.date).toLocaleDateString(),
     orders: sale.orders,

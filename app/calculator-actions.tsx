@@ -4,6 +4,10 @@ import * as XLSX from "xlsx";
 import { CalculatedThresholdResult, ThresholdConfig } from "./calculator";
 import { z } from "zod";
 
+/**
+ * Schema for validating inventory data from uploaded files
+ * Requires product ID, name, date, inventory level, orders and lead time
+ */
 const ValidationSchema = z.array(
   z.object({
     product_id: z.string(),
@@ -15,9 +19,29 @@ const ValidationSchema = z.array(
   })
 );
 
-const inventoryConfig: ThresholdConfig = {
-  safetyStockPercentage: 0.2, // 20% safety stock - this could be made configurable
-};
+/**
+ * Calculates inventory thresholds from uploaded file data
+ *
+ * @param file - The uploaded Excel/CSV file containing inventory data
+ * @returns Object containing either calculated threshold results or error message
+ *
+ * The function:
+ * 1. Validates file extension (.xlsx, .xls, .csv) and size (<1MB)
+ * 2. Parses and validates file contents against schema
+ * 3. Groups data by product ID
+ * 4. Calculates key metrics for each product:
+ *    - Average daily sales
+ *    - Average lead time
+ *    - Min/max daily sales
+ *    - Safety stock
+ *    - Low/medium/high thresholds
+ *
+ * Threshold calculations:
+ * - Safety stock = (max daily sales - avg daily sales) * avg lead time
+ * - Low threshold = (min daily sales * avg lead time) + safety stock
+ * - Medium threshold = (avg daily sales * avg lead time) + safety stock
+ * - High threshold = (max daily sales * avg lead time) + safety stock
+ */
 export const calculateThresholdsAction = async ({
   file,
 }: {
