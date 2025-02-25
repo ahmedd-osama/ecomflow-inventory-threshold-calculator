@@ -1,4 +1,3 @@
-import Image from "next/image";
 import { Hero } from "./hero";
 import { InventoryThresholdCalculator } from "./inventory-threshold-calculator";
 import { LinesSeparator } from "@/components/lines-separator";
