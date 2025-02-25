@@ -7,9 +7,16 @@ import { useCalculatorContext } from "./calculator-context";
 import { Button } from "@/components/ui/button";
 import Loading from "@/components/ui/loading";
 import { InventoryThresholdView } from "./inventory-threshold-view";
+
 export const InventoryThresholdCalculator = () => {
   const { setFile, isUploading, results, calculateThresholds } =
     useCalculatorContext();
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    calculateThresholds();
+  };
+
   return (
     <div className="px-4 md:px-8 pb-24">
       <div className="flex flex-col items-center justify-center gap-4 py-8  ">
@@ -21,23 +28,34 @@ export const InventoryThresholdCalculator = () => {
           </AlertTitle>
           <AlertDescription>
             <ol className="list-decimal pl-4 space-y-2 text-foreground text-base">
-              <li>Enter your historical sales data for the product</li>
-              <li>Input your current inventory levels and reorder costs</li>
-              <li>Specify your desired service level and lead time</li>
               <li>
-                The calculator will analyze your data and determine optimal
-                reorder points
+                Upload an Excel file containing your historical sales data (
+                <a href="/sample.csv" className="underline">
+                  download sample
+                </a>{" "}
+                or{" "}
+                <a href="/sample-with-error.csv" className="underline">
+                  sample with error
+                </a>
+                )
+              </li>
+              <li>The file should include daily orders and inventory levels</li>
+              <li>Click "Calculate Thresholds" to analyze your data</li>
+              <li>
+                The calculator will process your data and generate optimal
+                inventory thresholds
               </li>
               <li>
-                Review the suggested minimum and maximum inventory thresholds
+                View the results showing low, medium and high threshold levels
               </li>
+              <li>Use the interactive chart to visualize inventory patterns</li>
               <li>
-                Use the generated insights to optimize your inventory management
+                Review key metrics like average daily sales and safety stock
               </li>
             </ol>
           </AlertDescription>
         </Alert>
-        <div className="w-3xl max-w-full mx-auto">
+        <form onSubmit={handleSubmit} className="w-3xl max-w-full mx-auto">
           <FileUploader
             onChange={(file) => {
               setFile(file);
@@ -49,19 +67,21 @@ export const InventoryThresholdCalculator = () => {
             disabled={isUploading}
             isUploading={isUploading}
           />
-          <Button className="w-full" size={"lg"} onClick={calculateThresholds}>
+          <Button type="submit" className="w-full" size={"lg"}>
             {isUploading ? <Loading /> : "Calculate Thresholds"}
           </Button>
-        </div>
+        </form>
       </div>
       {results && (
         <div className=" max-w-full mx-auto">
           <h2 className="text-3xl font-bold text-center">Results</h2>
-          {results.map((result) => {
-            return (
-              <InventoryThresholdView key={result.product_id} data={result} />
-            );
-          })}
+          <div className="grid md:grid-cols-2 gap-y-8 gap-x-4">
+            {results.map((result) => {
+              return (
+                <InventoryThresholdView key={result.product_id} data={result} />
+              );
+            })}
+          </div>
         </div>
       )}
     </div>

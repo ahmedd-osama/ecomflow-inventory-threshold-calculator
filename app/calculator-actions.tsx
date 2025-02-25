@@ -1,7 +1,7 @@
 "use server";
 
 import * as XLSX from "xlsx";
-import { CalculatedThresholdResult } from "./calculator";
+import { CalculatedThresholdResult, ThresholdConfig } from "./calculator";
 import { z } from "zod";
 
 const ValidationSchema = z.array(
@@ -15,6 +15,9 @@ const ValidationSchema = z.array(
   })
 );
 
+const inventoryConfig: ThresholdConfig = {
+  safetyStockPercentage: 0.2, // 20% safety stock - this could be made configurable
+};
 export const calculateThresholdsAction = async ({
   file,
 }: {
@@ -69,20 +72,27 @@ export const calculateThresholdsAction = async ({
 
   // Handling Inventory Threshold Logic And Calculaions
 
-  // Group data by product_id
+  // Group data by product_id: shape is {product_id: CalculatedThresholdResult}
   const groupedData: Record<string, CalculatedThresholdResult> =
     validatedData.reduce((acc, curr) => {
       if (!acc[curr.product_id]) {
+        // first encounter of product_id
         acc[curr.product_id] = {
           product_id: curr.product_id,
           product_name: curr.product_name,
           sales_data: [],
+          total_daily_sales: 0,
+          total_lead_time_days: 0,
           avg_daily_sales: 0,
+          minimum_daily_sales: 0,
+          maximum_daily_sales: 0,
           avg_lead_time_days: 0,
+          safety_stock: 0,
           days_count: 0,
         };
       }
 
+      // add sales data to the product
       acc[curr.product_id].sales_data.push({
         date: curr.date,
         inventory_level: curr.inventory_level,
@@ -90,8 +100,9 @@ export const calculateThresholdsAction = async ({
         lead_time_days: curr.lead_time_days,
       });
 
-      acc[curr.product_id].avg_daily_sales += curr.orders;
-      acc[curr.product_id].avg_lead_time_days += curr.lead_time_days;
+      // update total sales, lead time
+      acc[curr.product_id].total_daily_sales += curr.orders;
+      acc[curr.product_id].total_lead_time_days += curr.lead_time_days;
       acc[curr.product_id].days_count++;
 
       return acc;
@@ -107,23 +118,56 @@ export const calculateThresholdsAction = async ({
         new Date(a.date).getTime() - new Date(b.date).getTime()
     );
 
+    const avgDailySales = Math.round(
+      group.total_daily_sales / group.days_count
+    );
+    const avgLeadTime = Math.round(
+      group.total_lead_time_days / group.days_count
+    );
+    const minimumDailySales = Math.min(
+      ...group.sales_data.map((sale) => sale.orders)
+    );
+    const maximumDailySales = Math.max(
+      ...group.sales_data.map((sale) => sale.orders)
+    );
+
+    // Calculate thresholds
+    // safety stock = (maximumDailySales - avgDailySales) * avgLeadTime
+    // lowThreshold = (maximumDailySales * avgLeadTime) + safetyStock
+    // mediumThreshold = (avgDailySales * avgLeadTime) + safetyStock
+    // highThreshold = (minimumDailySales * avgLeadTime) + safetyStock
+
+    const safetyStock = Math.round(
+      (maximumDailySales - avgDailySales) * avgLeadTime
+    );
+
+    // reorder threshold = medium threshold
+    const mediumThreshold =
+      Math.round(avgDailySales * avgLeadTime) + safetyStock;
+
+    const highThreshold =
+      Math.round(maximumDailySales * avgLeadTime) + safetyStock;
+    const lowThreshold =
+      Math.round(minimumDailySales * avgLeadTime) + safetyStock;
+
     return {
       product_id: group.product_id,
       product_name: group.product_name,
-      avg_lead_time_days: Math.round(
-        group.avg_lead_time_days / group.days_count
-      ),
-      avg_daily_sales: Math.round(group.avg_daily_sales / group.days_count),
+      total_lead_time_days: group.total_lead_time_days,
+      total_daily_sales: group.total_daily_sales,
+      avg_lead_time_days: avgLeadTime,
+      avg_daily_sales: avgDailySales,
+      minimum_daily_sales: minimumDailySales,
+      maximum_daily_sales: maximumDailySales,
       sales_data: group.sales_data,
       days_count: group.days_count,
+      safety_stock: safetyStock,
+      thresholds: {
+        low: lowThreshold,
+        medium: mediumThreshold,
+        high: highThreshold,
+      },
     };
-  });
-
-  // Handling Inventory Threshold Calculations
-
-  console.log({
-    sales_data: mergedData[0].sales_data,
-    productData: mergedData[0],
   });
 
   return {

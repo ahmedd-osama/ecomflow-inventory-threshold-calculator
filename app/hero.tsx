@@ -42,6 +42,7 @@ export const Hero = () => {
               <li>Tailwind CSS V.4</li>
               <li>TypeScript</li>
               <li>Shadcn UI</li>
+              <li>Recharts (Shadcn Charts)</li>
             </ul>
           </div>
           <div>
@@ -50,18 +51,24 @@ export const Hero = () => {
               {/*  */}
               <li>Cursor</li>
               <li>Zod</li>
-              <li>React Hook Form</li>
-              <li>Shadcn Charts</li>
-              <li>MongoDB</li>
+              <li>XLSX</li>
             </ul>
           </div>
         </div>
-        <h3 className="text-2xl font-semibold my-8">
-          Total Development Time:{" "}
-          <span className="font-bold rounded-lg border-gray-400 border px-2 py-1">
-            2 hours : 30 Mins
-          </span>
-        </h3>
+        <div>
+          <h3 className="text-xl font-semibold my-8">
+            Busness Logic Development Time:{" "}
+            <span className="font-bold rounded-lg border-gray-400 border px-2 py-1">
+              35 Mins
+            </span>
+          </h3>
+          <h3 className="text-2xl font-semibold my-8">
+            Total Development Time:{" "}
+            <span className="font-bold rounded-lg border-gray-400 border px-2 py-1">
+              2 hours : 10 Mins
+            </span>
+          </h3>
+        </div>
       </section>
     </>
   );
